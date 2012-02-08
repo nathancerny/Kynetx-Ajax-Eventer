@@ -1,3 +1,4 @@
+// Used for mixing the files
 var config = require('./config.js').config;
 var fs = require('fs');
 var i = 0;
