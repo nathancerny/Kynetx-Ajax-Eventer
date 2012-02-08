@@ -1,0 +1,72 @@
+#boot .topbar{
+  padding-left:20px; 
+}
+
+
+#boot .topbar h3 a, #boot .topbar .brand {
+  padding-left: 30px;
+}
+#boot .hero-unit {
+  padding-top:30px;
+  padding-bottom:30px;
+}
+#boot .hero-unit h1{
+  font-size:18px;
+  padding-bottom:10px;
+}
+#boot h2{
+  margin-top: -5px;
+  line-height: 24px;
+}
+#boot .deals h2.name{
+  font-size:12px;
+}
+#boot .deals h2.price{
+  font-size:14px;
+  margin-top:-3px;
+}
+#boot .deals .car_logo{
+  margin-top: 7px; 
+}
+#boot .car_price, #boot .deals .car_price_description{
+  font-size: 18px;
+  line-height:12px;
+}
+#boot #cars .detailed_view .detailed_logo{
+  float : right;
+  margin-right: 2277px;
+  line-height: 36px;
+  margin-top:5px;
+}
+#boot .detailed_view [show=no]{
+  display: none;
+}
+#boot .detailed_view h4{
+  line-height: 32px;
+}
+#boot .detailed_view{
+  display: none;
+}
+#boot .detailed_view .detail_value{
+  margin-top:8px;
+  
+}
+#boot .detailed_view .show_results{
+  margin-bottom: 10px;
+}
+
+#boot .detailed_view .purchase{
+  margin-top: 10px;
+}
+#boot #cars .detailed_view .deals_body{
+  margin-top: -50px;
+}
+#boot #hotels .detailed_image_logo{
+  margin-left: 2px;
+}
+#boot #hotels, #boot #cars {
+  overflow-y: scroll;
+}
+#boot tr {
+  cursor : pointer;
+}

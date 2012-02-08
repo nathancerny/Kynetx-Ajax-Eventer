@@ -1,0 +1,378 @@
+// init html_writers
+if(typeof KY_LIBRARY.EXPEDIA_CALENDAR.html_writers === 'undefined') {
+KY_LIBRARY.EXPEDIA_CALENDAR.html_writers = (function(){
+  var that = {};
+  that.drop_box = 'https://dl.dropbox.com/u/57162158/';
+  
+  that.addStars = function (rowElement, tripAdvisorRating) {
+    rowElement.raty({
+      readOnly: true,
+      start : tripAdvisorRating,
+      path : that.drop_box + 'jquery.raty-2.1.0/img/'
+    });
+    return true;
+  }
+  that.createDetail = function(row, name, value){
+    var clone = row.clone();
+    clone.find('.detail_name h4').html(name);
+    clone.find('.detail_value').html(value);
+    clone.attr('show', 'yes');
+    return clone;
+  }
+  that.createImageURL = (function () {
+    var base_url = 'https://images.travelnow.com/';
+    return function (loc, custom_base) {
+      if(typeof custom_base === 'undefined'){
+        return base_url + loc;  
+      }else{
+        return custom_base + loc;
+      }
+    };
+  }());
+  that.tableWriterHandler = function () {
+    $(selector).tablesorter({ sortList : [[1, 0]]});
+  }
+  that.createImageTag = function (loc, classes, custom_base) {
+    var imageTag = $('<img></img>')
+                   .attr('src', that.createImageURL(loc, custom_base))
+                   .addClass(classes);
+    return imageTag;
+  };
+  that.buildTemplateBase = function (div, name){
+    var detailedView = $K('<div></div>')
+                       .addClass('detailed_view');
+
+   
+    var returnDiv = $K('<div></div>')
+                     .addClass('span20');
+
+    var returnButton = $K('<button></button>')
+                       .addClass('btn show_results')
+                       .html('BACK');
+
+    var header = $K('<div></div>')
+                 .addClass('row detailed_header');
+    var headerSpan = $K('<span></span>')
+                     .addClass('span17');
+    var headerText = $K('<h3></h3>')
+                     .addClass('blue')
+                     .html(name.ucFirst() + ' Details For ' + '<span class="company_name"> </span>');
+    var headerImage = $K('<span></span>')
+                      .addClass('span2 detailed_logo')
+                      .html('<img class="detailed_image_logo"/>');
+    
+    var dealBody = $K('<div></div>')
+                   .addClass('deals_body');
+    var dealBodyRow = $K('<div></div>')
+                      .addClass('row')
+                      .attr('show', 'no');
+    var detailName = $K('<div></div>')
+                     .addClass('span7 detail_name')
+                     .html('<h4></h4>');
+    var detailValue = $K('<div></div>')
+                      .addClass('span12 detail_value');
+
+    var outerButton = $K('<div></div>')
+                      .addClass('span20 offset3');
+    var innerButton = $K('<button></button>')
+                      .addClass('btn danger purchase')
+                      .html('PURCHASE');
+                      
+    var table = $K('<table></table>')
+                .addClass('zebra-striped deals');
+    var tableBody = $K('<tbody></tbody>');
+
+
+    returnDiv.append(returnButton);
+
+    // Building the header
+
+    headerSpan.append(headerText);
+    header.append(headerSpan);
+    header.append(headerImage);
+
+    // Done Building header
+    
+    // Building the body
+      
+    dealBodyRow.append(detailName);
+    dealBodyRow.append(detailValue);
+    dealBody.append(dealBodyRow);
+
+    // Done Builing body
+    
+
+    // Building the button
+    outerButton.append(innerButton);
+
+    // done building button
+    
+    // building the table
+    
+    table.append(tableBody);
+
+    // done building the table
+
+    // building detailView
+    detailedView.append(returnDiv);
+    detailedView.append(header);
+    header.after(dealBody);
+    dealBody.after(outerButton);
+
+    // done building detailView
+
+    div.append(detailedView)
+    div.append(table);
+
+
+
+  }
+  return that;
+}());
+// finish html writers
+
+}
+
+// loading hotels
+if(typeof KY_LIBRARY.EXPEDIA_CALENDAR.hotels === 'undefined'){
+
+KY_LIBRARY.EXPEDIA_CALENDAR.hotels = function() {
+  var that = Object.create(KY_LIBRARY.EXPEDIA_CALENDAR.html_writers);
+  var view_element; 
+  var hotel_deals_element;  
+  var deal_results;
+  that.name = 'hotels';
+  that.search_data = {};
+  that.calendar_id = '';
+  var create_listeners = function () {
+    var show_results = view_element.find('.show_results');
+    var get_hotel = view_element.find('.get_hotel');
+    show_results.live('click', function () {
+      view_element.hide();
+      hotel_deals_element.show();
+    });
+    get_hotel.live('click', function () {
+      var link = get_hotel.attr('page_link');
+      window.open(link);
+
+    });
+  };
+  that.writeResults = function (shell, data) {
+    that.buildTemplateBase(shell, that.name);
+    var html = $('#' + that.name);
+    var resultHtml = $.map(data.HotelListResponse.HotelList.HotelSummary, function (element, index) {
+      var rowElement = $('<tr></tr>');
+      var tdElement = $('<td></td>');
+      var imageElement = that.createImageTag(element.thumbNailUrl);
+      var parElement = $('<p></p>').addClass('blue');
+      var nameElement = $('<h2></h2>').html(element.name).addClass('blue').addClass('name');
+      var rateElement = $('<h2></h2>').html('$' + element.highRate).addClass('blue').addClass('price');
+      var cityElement = $('<p></p>').html(element.city);
+      var starRatingElement = $('<div></div>')
+          .addClass('star-rating');
+      
+      view_element = html.find('.detailed_view');
+      hotel_deals_element = html.find('.deals');
+      deal_results = hotel_deals_element.find('tbody');
+      create_listeners();
+      rowElement.append(tdElement.clone().append(imageElement));
+      rowElement.append(tdElement.clone().append(nameElement));
+      nameElement.after(cityElement)
+                 .after(starRatingElement);
+      rowElement.append(tdElement.clone().append(rateElement));
+      deal_results.append(rowElement);
+      that.rowElementClick(rowElement, element);
+      that.addStars(starRatingElement, element.tripAdvisorRating);
+      return rowElement;
+    });
+    if(typeof handler === 'function'){
+      handler('#hotel_deals');
+    }
+      
+  }
+  that.rowElementClick = function (rowElement, element) {
+    rowElement.click(function () {
+      that.detailedView(element);
+      hotel_deals_element.hide();
+      view_element.show();
+    });
+  }
+  that.detailedView = function (element) {
+    var header = view_element.find('.detailed_header');
+    var name_element = view_element.find('.company_name');
+    var image_element = view_element.find('.detailed_image_logo');
+    var hotel_body = view_element.find('.deals_body');
+    var row = hotel_body.find('[show=no]');
+    var rate_details = element.RoomRateDetailsList.RoomRateDetails;
+    var charge_details = rate_details.RateInfo.ChargeableRateInfo;
+    var get_hotel = view_element.find('.get_hotel');
+    var desc = that.createDetail(row, "Description: ", rate_details.roomDescription); 
+    var loc = that.createDetail(row, "Location: ", element.locationDescription);
+    var nightly = that.createDetail(row, "Nightly Rate: ", charge_details["@nightlyRateTotal"]);
+    var sur = that.createDetail(row, "Sur Charge: ", charge_details["@surchargeTotal"]);
+    var total = that.createDetail(row, "Total: ", charge_details["@total"]);
+    hotel_body.find('[show=yes]').remove();
+    hotel_body.append(loc)
+              .append(nightly)
+              .append(sur)
+              .append(total)
+              .append(desc);
+    get_hotel.attr('page_link', element.deepLink);
+    name_element.html(element.name);
+    image_element.attr('src', that.createImageURL(element.thumbNailUrl));
+  }
+  that.search = function (reg_number, cal_id, find) {
+    var app = KOBJ.get_application('a1299x153');
+    console.log(find);
+    app.raise_event('hotels_data', 
+                   {'calendar_id' : cal_id,
+                     'reg_number' : reg_number,
+                    'search_params' : JSON.stringify(find) 
+                    });
+    console.log('Implement search for hotels');
+  }
+  return that; 
+};
+
+}
+// done loading hotels
+
+
+// loading cars
+if(typeof KY_LIBRARY.EXPEDIA_CALENDAR.cars === 'undefined') {
+
+KY_LIBRARY.EXPEDIA_CALENDAR.cars = function () {
+  var that = Object.create(KY_LIBRARY.EXPEDIA_CALENDAR.html_writers);
+  var view_element;
+  var car_deals_element;
+  var deal_results;
+  that.name = 'cars';
+  var create_listeners = function () {
+    var show_results = view_element.find('.show_results');
+    var rent_car = view_element.find('.purchase');
+    show_results.live('click', function () {
+      view_element.hide();
+      car_deals_element.show();
+    });
+    rent_car.live('click', function () {
+      var link = rent_car.attr('page_link');
+      window.open(link);
+
+    });
+
+
+  };
+  that.writeResults = function (html, data) {
+    that.buildTemplateBase(html, that.name);
+    html = $('#' + that.name);
+    console.log(html);
+    var resultHtml = $.map(data.AvailabilityResult.CarAvailability, function (element, index) {
+      var rowElement = $('<tr></tr>'); 
+      var tdElement = $('<td></td>');
+      var rateElement = $('<span></span>')
+                        .prepend('<p class="car_price blue">' + element.RateInfo.displayRate.$t + ' </p>')
+                        .append('<p class="car_price_description">' + element.RateInfo.rateTypeDescription.$t + '</p>');
+      var companyUrl = 'carLogos/' + element.companyCode.$t + '.gif';
+      var imageElement = that.createImageTag(companyUrl, 'car_logo', that.drop_box);
+      var totalElement = $('<span></span>')
+                         .prepend('<p class="car_price blue">' + element.RateInfo.nativeApproximateTotalPrice.$t + '</p>')
+                         .append('<p class="car_price_description"> total </p>');
+      view_element = html.find('.detailed_view');
+      car_deals_element = html.find('.deals');
+      deal_results = car_deals_element.find('tbody');
+      create_listeners();
+      rowElement.append(tdElement.clone().append(imageElement));
+      rowElement.append(tdElement.clone().append(rateElement));
+      rowElement.append(tdElement.clone().append(totalElement));
+      deal_results.append(rowElement);
+      that.rowElementClick(rowElement, element);
+    });
+    return resultHtml;
+  }
+  that.rowElementClick = function(rowElement, element){
+    rowElement.click(function() {
+        that.detailedView(element);
+        car_deals_element.hide();
+        view_element.show();
+    });
+  }
+  that.detailedView = function (data) {
+    var header = view_element.find('.detailed_header'); 
+    var company_name_class = view_element.find('.company_name');
+    var company_name = data.companyName.$t; 
+    var img_element = view_element.find('.detailed_image_logo');
+    var image_url = 'carLogos/' + data.companyCode.$t + '.gif';
+    var car_body = view_element.find('.deals_body');
+    var row = car_body.find('[show=no]');
+    var rate_info = data.RateInfo;
+    var car_class,
+        loc,
+        desc,
+        rate,
+        total,
+        extra;
+    car_body.find('[show=yes]').remove();
+    if(typeof company_name === 'string'){
+      company_name_class.html(company_name.ucFirst()); 
+    }
+    img_element.attr('src', that.drop_box + image_url);
+    
+    
+    
+    car_class = that.createDetail(row, 'Class: ', data.carClass.$t);
+    loc = that.createDetail(row, 'Location: ', data.locationString.$t);
+    desc = that.createDetail(row, 'Description: ', data.carInfoString.$t);
+    rate = that.createDetail(row, 'Rate: ', rate_info.displayRate.$t + ' ' + rate_info.rateTypeDescription.$t);
+    total = that.createDetail(row, 'Total Price: ', rate_info.displayRate.$t);
+    extra = that.createDetail(row, 'Extra Praic: ', rate_info.nativeExtraDayCharge.$t);
+    car_body.append(car_class)
+            .append(loc)
+            .append(desc)
+            .append(rate)
+            .append(total)
+            .append(extra);
+    that.buildAffLink(data);
+      
+
+
+  }
+  that.buildAffLink = function (data) {
+    var rent_car = view_element.find('.purchase');
+    var page_link = 'https://secure.travelnow.com/itinerary/reserve.jsp';
+    var val;
+    var other_val;
+    var key;
+    var key_other;
+    page_link += '?cid=' + '374820';
+    page_link += '&Submit=' + 'BOOK NOW';
+    for(key in data){
+      val = data[key];  
+      if(typeof val.$t !== 'undefined'){
+        page_link += '&' + key + '=' + val.$t;
+      }else{
+        for(key_other in val){
+          other_val = val[key_other];
+          if(typeof other_val.$t !== 'undefined'){
+            page_link += '&' + key_other + '=' + other_val.$t;
+          }
+        }
+      }
+    }
+    rent_car.attr('page_link', page_link);
+
+  }
+ 
+  that.search = function (reg_number, cal_id, find) {
+    var app = KOBJ.get_application('a1299x153');
+    console.log(find);
+    app.raise_event('cars_data', 
+                   {'calendar_id' : cal_id,
+                    'reg_number' : reg_number,
+                    'search_params' : JSON.stringify(find) 
+                    });
+  }
+  
+  return that;
+};
+}
+// finished loading cars
